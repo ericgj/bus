@@ -27,20 +27,34 @@
    *  mainPanel.applyFilter and sidePanel.setFilter,
    *  and to two custom handlers
    */
-  bus.route.from(filterPanel, 'select')
+  bus.route().from(filterPanel, 'select')
      .to( mainPanel, 'applyFilter' )
      .to( sidePanel, 'setFilter' )
      .handle( logFilterEvent )
      .handle( function(param) { /* some callback */ } );
 
   /**
-   *  Or, define mappings in reverse direction. Here
+   *  Or, define routes in reverse direction. Here
    *  events from sidePanel and mainPanel are routed
    *  to filterPanel.clearFilter.
    */
-  bus.route.to(filterPanel, 'clearFilter')
+  bus.route().to(filterPanel, 'clearFilter')
      .from( sidePanel, 'reset' )
      .from( mainPanel, 'clear' );
+
+  /**
+   *  You can define different routes in a single call
+   *  using route(), aliased as reset()
+   */
+  bus.route()
+       .from(x,'event')
+         .to(y1,'method')
+         .to(y2,'method')
+     .reset()
+       .to(z,'method')
+         .from(w1,'event')
+         .from(w2,'event');
+
 ```
 
 ## API
