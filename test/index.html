@@ -1,0 +1,156 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="../build/build.js"></script>
+    <script src="mocha/mocha.js"></script>
+    <script src="mocha/expect.js"></script>
+    <link rel="stylesheet" href="mocha/mocha.css" />
+    <script>
+
+mocha.setup('bdd');
+
+var Emitter = require('component-emitter');
+var Bus = require('bus');
+
+function Source(){ return this; }
+Emitter(Source.prototype);
+Source.prototype.fire = 
+  function(payload){ this.emit('fire',payload) }
+
+function Receiver(spy){ this.spy = spy; return this; }
+Receiver.prototype.onReceive = 
+  function(payload){ 
+    this.spy.messages = this.spy.messages || []
+    this.spy.messages.push(payload); 
+  }
+
+describe('Bus', function(){
+  describe('from', function(){
+
+    it('should route event from source to 2 receivers', function(){
+      var subject = new Bus;
+      var source = new Source;
+      var spy1 = {}, spy2 = {},
+          rcp1 = new Receiver(spy1),
+          rcp2 = new Receiver(spy2)
+
+      subject.route().from(source,'fire')
+             .to(rcp1, 'onReceive')
+             .to(rcp2, 'onReceive');
+
+      source.fire('why hello there');
+
+      expect(spy1.messages[0]).to.equal('why hello there');
+      expect(spy2.messages[0]).to.equal('why hello there');
+      expect(spy1.messages.length).to.equal(1);
+      expect(spy2.messages.length).to.equal(1);
+    })
+
+    it('should separately route events from 2 sources to 2 receivers', function(){
+      var subject = new Bus;
+      var source = new Source, source2 = new Source;
+      var spy1 = {}, spy2 = {},
+          rcp1 = new Receiver(spy1),
+          rcp2 = new Receiver(spy2)
+
+      subject.route().from(source,'fire')
+             .to(rcp1, 'onReceive')
+             .route().from(source2,'fire')
+             .to(rcp2, 'onReceive');
+
+      source.fire('why hello there');
+      source2.fire('good lookin');
+
+      expect(spy1.messages[0]).to.equal('why hello there');
+      expect(spy2.messages[0]).to.equal('good lookin');
+      expect(spy1.messages.length).to.equal(1);
+      expect(spy2.messages.length).to.equal(1);
+    })
+    
+  })
+
+  describe('to', function(){
+
+    it('should route event to a receiver from 2 sources', function(){
+      var subject = new Bus;
+      var source = new Source, source2 = new Source;
+      var spy = {},
+          rcp = new Receiver(spy)
+
+      subject.route().to(rcp, 'onReceive')
+             .from(source,'fire')
+             .from(source2,'fire')
+
+      source2.fire('why hello there');
+      source.fire('and goodbye!');
+      
+      expect(spy.messages[0]).to.equal('why hello there');
+      expect(spy.messages[1]).to.equal('and goodbye!');
+    })
+
+    it('should separately route events to 2 receivers from 2 sources', function(){
+      var subject = new Bus;
+      var source = new Source, source2 = new Source;
+      var spy1 = {}, spy2 = {},
+          rcp1 = new Receiver(spy1),
+          rcp2 = new Receiver(spy2)
+
+      subject.route()
+             .to(rcp1, 'onReceive')
+             .from(source,'fire')
+             .route()
+             .to(rcp2, 'onReceive')
+             .from(source2,'fire');
+
+      source.fire('why hello there');
+      source2.fire('good lookin');
+
+      expect(spy1.messages[0]).to.equal('why hello there');
+      expect(spy2.messages[0]).to.equal('good lookin');
+    })
+    
+  })
+
+  describe('handle', function(){
+
+    it('should route to a custom handler specified before source', function(){
+      var subject = new Bus;
+      var source = new Source;
+      var spy = {};
+      var upper = function(msg){ this.message = msg.toUpperCase() }
+
+      subject.route().handle( upper.bind(spy) )
+             .from(source,'fire')
+
+      source.fire('fire!');
+
+      expect(spy.message).to.equal('FIRE!');
+    })
+
+    it('should route to a custom handler specified after source', function(){
+      var subject = new Bus;
+      var source = new Source;
+      var spy = {};
+      var upper = function(msg){ this.message = msg.toUpperCase() }
+
+      subject.route().from(source,'fire')
+             .handle( upper.bind(spy) )
+
+      source.fire('fire!');
+
+      expect(spy.message).to.equal('FIRE!');
+    })
+
+  })
+
+})
+
+    </script>
+  </head>
+  <body>
+    <div id="mocha"></div>
+    <script>
+      mocha.run();
+    </script>
+  </body>
+</html>

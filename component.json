@@ -1,0 +1,15 @@
+{
+  "name": "bus",
+  "repo": "ericgj/bus",
+  "description": "Event bus",
+  "version": "0.0.1",
+  "keywords": [],
+  "dependencies": {},
+  "development": {
+    "component/emitter": "*"  
+  },
+  "license": "MIT",
+  "scripts": [
+    "index.js"
+  ]
+}
