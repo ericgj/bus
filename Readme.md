@@ -76,6 +76,14 @@ Set the current receiver to an arbitrary function rather than object + method.
 
 Reset the current source and receiver, to define a new route.
    
+## Note
+
+There are no hard dependencies, any `emitter`-ish object (with `.on`) will work
+as a source.
+
+The DSL does not currently control unbinding events (`.off`), so if you want 
+that, manage it in your sources, or send me a pull request for 
+`bus.off().to().from()`  :wink:
 
 ## License
 
