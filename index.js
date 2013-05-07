@@ -18,6 +18,7 @@ Bus.prototype.to = function(receiver,meth){
   return this;
 }
 
+Bus.prototype.reset =
 Bus.prototype.route = function(){
   this._from = null;  this._to = null;
   return this;
